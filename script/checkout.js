@@ -1,4 +1,4 @@
-import { cart, saveToStorage } from "../data/cart.js";
+import { cart, removeFromCart, saveToStorage } from "../data/cart.js";
 import { products } from "../data/products.js";
 import formatCurrency from "./utils/money.js";
 
@@ -16,9 +16,9 @@ cart.forEach((cartItem) => {
   })
      
   cartHTML += 
-
   `
-     <div class="cart-item-container">
+     <div class="cart-item-container js-cart-container" 
+     data-product-id="${matchingProduct.id}">
             <div class="delivery-date">
               Delivery date: Tuesday, June 21
             </div>
@@ -54,7 +54,8 @@ cart.forEach((cartItem) => {
                   data-product-id="${matchingProduct.id}">
                     Update
                   </span>
-                  <span class="delete-quantity-link link-primary">
+                  <span class="delete-quantity-link link-primary js-delete-button"
+                  data-product-id="${matchingProduct.id}">
                     Delete
                   </span>
                 </div>
@@ -114,7 +115,7 @@ document.querySelector('.js-order-summary').innerHTML = cartHTML
 
 
 
-// update button
+// Update button
 document.querySelectorAll('.update-quantity-link')
 .forEach((button) => {
   button.addEventListener('click', () => {
@@ -138,6 +139,20 @@ document.querySelectorAll('.update-quantity-link')
       location.reload()
     }
    }
+  })
+})
+
+
+// Delete button
+document.querySelectorAll('.js-delete-button')
+.forEach((button) => {
+  button.addEventListener('click', () => {
+    const productId = button.dataset.productId
+    // Function in cart.js
+    removeFromCart(productId)
+    const container = document.querySelector(`.js-cart-container[data-product-id="${productId}"]`)
+    container.remove()
+    saveToStorage()
   })
 })
 
