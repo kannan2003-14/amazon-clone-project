@@ -209,3 +209,13 @@
   margin-top: 11px;
   margin-bottom: 15px;
 }
+
+.hidden{
+  display: none;
+}
+
+.quantity-input{
+  width: 40px;
+}
+
+

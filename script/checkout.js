@@ -1,4 +1,4 @@
-import { cart } from "../data/cart.js";
+import { cart, saveToStorage } from "../data/cart.js";
 import { products } from "../data/products.js";
 import formatCurrency from "./utils/money.js";
 
@@ -35,10 +35,23 @@ cart.forEach((cartItem) => {
                   $${formatCurrency(matchingProduct.priceCents)}
                 </div>
                 <div class="product-quantity">
+
                   <span>
-                    Quantity: <span class="quantity-label">${cartItem.quantity}</span>
+                    Quantity: <span class="quantity-label"
+                    data-product-id="${matchingProduct.id}"
+                    >${cartItem.quantity}</span>
                   </span>
-                  <span class="update-quantity-link link-primary">
+
+                  <input type="number"
+                  class="quantity-input hidden"
+                  data-product-id="${matchingProduct.id}"
+                  value="${cartItem.quantity}"
+                  min="1">
+
+
+
+                  <span class="update-quantity-link link-primary js-update-button"
+                  data-product-id="${matchingProduct.id}">
                     Update
                   </span>
                   <span class="delete-quantity-link link-primary">
@@ -97,3 +110,37 @@ cart.forEach((cartItem) => {
 })
 
 document.querySelector('.js-order-summary').innerHTML = cartHTML
+
+
+
+
+// update button
+document.querySelectorAll('.update-quantity-link')
+.forEach((button) => {
+  button.addEventListener('click', () => {
+   const productId = button.dataset.productId
+   const input = document.querySelector(`.quantity-input[data-product-id="${productId}"]`)
+   const label = document.querySelector(`.quantity-label[data-product-id="${productId}"]`)
+
+   if(button.textContent.trim() === 'Update'){
+    if(label) label.classList.add('hidden')
+    if(input) input.classList.remove('hidden')
+    button.textContent = 'save'  
+   }else{
+    const newQuantity = Number(input.value)
+    if(newQuantity > 0){
+      cart.forEach((cartItem) => {
+        if(productId === cartItem.productId){
+          cartItem.quantity = newQuantity
+        }
+      })
+      saveToStorage()
+      location.reload()
+    }
+   }
+  })
+})
+
+
+
+
