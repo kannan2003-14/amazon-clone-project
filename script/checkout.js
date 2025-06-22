@@ -1,4 +1,4 @@
-import { cart, removeFromCart, saveToStorage } from "../data/cart.js";
+import { cart, clearCart, removeFromCart, saveToStorage } from "../data/cart.js";
 import { deliveryOptions } from "../data/deliveryOption.js";
 import { products } from "../data/products.js";
 import dayjs from "https://unpkg.com/supersimpledev@8.5.0/dayjs/esm/index.js"
@@ -6,6 +6,30 @@ import formatCurrency from "./utils/money.js";
 
 
 function renderOrderSummary() {
+
+    if(cart.length === 0){
+    document.querySelector('.js-order-summary')
+    .innerHTML = `
+      <p>Your Cart is Empty.</p>
+      <a href="amazon.html">
+      <button class="view-product-button button-primary">View Products</button>
+      </a>
+    `
+    document.querySelector('.js-checkout-item')
+    .textContent = '0 item'
+    return
+  }
+
+
+  let totalQuantity = 0
+  cart.forEach((cartItem) => {
+    totalQuantity += cartItem.quantity
+  })
+
+  document.querySelector('.js-checkout-item')
+  .textContent = `${totalQuantity} ${totalQuantity === 1 ? 'item': 'items'}`
+
+
 let cartHTML = '';
 
 cart.forEach((cartItem) => {
@@ -31,11 +55,7 @@ deliveryOptions.forEach((option) => {
   const deliveryDate = today.add(deliveryOption.deliverydays, 'days')
   const dateString = deliveryDate.format('dddd, MMMM D')
 
-
-
-
-
-cartHTML += `
+  cartHTML += `
        <div class="cart-item-container js-cart-item-container-${matchingProduct.id}">
             <div class="delivery-date">
               Delivery date: ${dateString}
@@ -135,7 +155,7 @@ function deliveryOptionHTML(matchingProduct, cartItem){
       </div>
     </div>
   `
-  
+
   })
 
   return html
@@ -154,6 +174,8 @@ document.querySelectorAll('.js-delete-button')
     container.remove()
     saveToStorage()
     renderPaymentSummary()
+    renderOrderSummary()
+    renderDelivery()
   })
 })
 
@@ -202,6 +224,7 @@ document.querySelectorAll('.js-delivery-option')
    saveToStorage()
    renderOrderSummary()
    renderPaymentSummary()
+   renderDelivery()
   })
 })
 }
@@ -264,6 +287,10 @@ function renderPaymentSummary() {
     totalQuantity += cartItem.quantity
   })
 
+  const cartDisabled = cart.length === 0
+  ? 'disabled style="background-color:rgb(221, 194, 126); color: black; cursor: not-allowed"'
+  : ''
+
   const paymentSummaryHTML = `
    
            <div class="payment-summary-title">
@@ -295,7 +322,7 @@ function renderPaymentSummary() {
             <div class="payment-summary-money">$${formatCurrency(totalCents)}</div>
           </div>
 
-          <button class="place-order-button button-primary">
+          <button class="place-order-button button-primary js-place-order-button" ${cartDisabled}>
             Place your order
           </button>
   
@@ -305,6 +332,38 @@ function renderPaymentSummary() {
 }
 
 renderPaymentSummary()
+renderDelivery()
+
+function renderDelivery() {
+
+  document.querySelector('.js-place-order-button')
+  .addEventListener('click', () => {
+    const {totalCents} = calculateCartTotal()
+
+    const order = {
+    id: crypto.randomUUID(),
+    date: new Date().toISOString(),
+    cartTotalCents: totalCents,
+    cart: cart.map(cartItem => ({
+      ...cartItem
+    }))
+  }
+
+  const existingOrders = JSON.parse(localStorage.getItem('orders')) || []
+  existingOrders.push(order)
+  localStorage.setItem('orders', JSON.stringify(existingOrders))
+
+
+  clearCart()
+  window.location.href = 'orders.html'
+ 
+
+  })
+    
+}
+
+
+
 
 
 

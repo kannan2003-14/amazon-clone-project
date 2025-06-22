@@ -25,3 +25,9 @@ export function removeFromCart(productId) {
     })
     cart = newCart
 }
+
+
+export function clearCart() {
+  cart.length = 0
+  saveToStorage()
+}
