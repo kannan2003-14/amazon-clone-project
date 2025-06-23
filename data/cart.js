@@ -31,3 +31,25 @@ export function clearCart() {
   cart.length = 0
   saveToStorage()
 }
+
+
+
+  export function pushCart(productId){
+    let matchingItem;
+    cart.forEach((cartItem) => {
+      if(productId === cartItem.productId){
+        matchingItem = cartItem
+      }
+    })
+
+    if(matchingItem){
+      matchingItem.quantity++
+    }else{
+      cart.push({
+        productId: productId,
+        quantity: 1,
+        deliveryOptionId: '1'
+      })
+    }
+    saveToStorage()
+  }
