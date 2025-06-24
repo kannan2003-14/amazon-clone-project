@@ -1,3 +1,5 @@
+import { cart } from "../data/cart.js"
+
 const trackingItem = JSON.parse(localStorage.getItem('trackingItem'))
 
 if(trackingItem) {
@@ -42,6 +44,20 @@ if(trackingItem) {
     document.querySelector('.delivery-date')
     .innerHTML = `Delivered On ${formattedDate}`
   }
+}
+
+
+ordersQuantity()
+  
+function ordersQuantity(){
+  let cartQuantity = 0;
+
+  cart.forEach((cartItem) => {
+    cartQuantity += cartItem.quantity
+  })
+
+  document.querySelector('.js-cart-quantity')
+  .innerHTML = cartQuantity
 }
 
  

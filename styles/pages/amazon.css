@@ -158,3 +158,16 @@
   padding: 8px;
   border-radius: 50px;
 }
+
+.empty{
+  font-weight: bold;
+  font-size: 1.3rem;
+  margin-top: 20px;
+  margin-left: 20px;
+  background-color: rgb(255, 216, 20);
+  text-align: center;
+  padding: 10px;
+  border-radius: 10px; 
+  cursor: pointer;
+}
+

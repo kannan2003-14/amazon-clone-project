@@ -191,9 +191,4 @@ document.querySelectorAll('.js-tracking-button')
   window.location.href = 'tracking.html'
   })
 })
-
-
-
-
-
-
+  
