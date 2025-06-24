@@ -54,7 +54,7 @@ orders.slice().reverse().forEach((order) => {
   })
 
   const isDelivered = new Date() >= deliveryDate
-  const deliveryLabel = isDelivered ? 'Delivered On:' : 'Arriving On:'
+  const deliveryLabel = isDelivered ? 'Delivered On:' : 'Arriving On'
 
     orderItemsHTML += `
      
@@ -82,7 +82,10 @@ orders.slice().reverse().forEach((order) => {
             <div class="product-actions">
               <a href="tracking.html">
                 <button class="track-package-button button-secondary js-tracking-button"
-                data-product-id="${matchingProduct.id}">
+                data-product-name="${matchingProduct.name}"
+                data-product-image="${matchingProduct.image}"
+                data-product-date="${deliveryDate.toISOString()}"
+                data-quantity="${cartItem.quantity}">
                   Track package
                 </button>
               </a>
@@ -170,6 +173,24 @@ function ordersQuantity(){
   .innerHTML = cartQuantity
 }
 
+
+document.querySelectorAll('.js-tracking-button')
+.forEach((button) => {
+  button.addEventListener('click', () => {
+  const { productName, productImage, productDate, quantity} = button.dataset 
+
+  const trackingData = {
+    name: productName,
+    image: productImage,
+    date: productDate,
+    quantity: quantity
+  }
+
+  localStorage.setItem('trackingItem', JSON.stringify(trackingData))
+
+  window.location.href = 'tracking.html'
+  })
+})
 
 
 
