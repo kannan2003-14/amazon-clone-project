@@ -81,8 +81,7 @@
   transition: width 0.5s ease;
 }
 
-.active{
-  color: green;
+.current-status {
   font-weight: bold;
+  color: green;
 }
-

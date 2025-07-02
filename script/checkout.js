@@ -1,9 +1,9 @@
-import { cart, clearCart, removeFromCart, saveToStorage } from "../data/cart.js";
-import { deliveryOptions } from "../data/deliveryOption.js";
-import { products } from "../data/products.js";
+import { cart, clearCart, findMatchingItem, removeFromCart, saveToStorage } from "../data/cart.js";
+import { deliveryOptions, findDeliveryOption } from "../data/deliveryOption.js";
+import { findMatchingProduct, products } from "../data/products.js";
 import dayjs from "https://unpkg.com/supersimpledev@8.5.0/dayjs/esm/index.js"
 import formatCurrency from "./utils/money.js";
-
+import { cartTotalQuantity } from "../data/add-to-cart.js";
 
 function renderOrderSummary() {
 
@@ -21,11 +21,7 @@ function renderOrderSummary() {
   }
 
 
-  let totalQuantity = 0
-  cart.forEach((cartItem) => {
-    totalQuantity += cartItem.quantity
-  })
-
+  const totalQuantity = cartTotalQuantity()
   document.querySelector('.js-checkout-item')
   .textContent = `${totalQuantity} ${totalQuantity === 1 ? 'item': 'items'}`
 
@@ -34,22 +30,9 @@ let cartHTML = '';
 
 cart.forEach((cartItem) => {
 const productId = cartItem.productId
-
-let matchingProduct;
-products.forEach((product) => {
-  if(productId === product.id) {
-    matchingProduct = product
-  }
-})
+const matchingProduct = findMatchingProduct(productId)
 const deliveryOptionId = cartItem.deliveryOptionId
-
-let deliveryOption;
-
-deliveryOptions.forEach((option) => {
-  if(option.id === deliveryOptionId){
-    deliveryOption = option
-  }
-})
+const deliveryOption = findDeliveryOption(deliveryOptionId)
 
   const today = dayjs()
   const deliveryDate = today.add(deliveryOption.deliverydays, 'days')
@@ -197,6 +180,7 @@ document.querySelectorAll('.js-update-button')
     const newQuantity = Number(input.value)
     if(newQuantity > 0){
       cart.forEach((cartItem) => {
+        if(productId === cartItem.productId)
         cartItem.quantity = newQuantity
       })
       saveToStorage()
@@ -214,12 +198,7 @@ document.querySelectorAll('.js-delivery-option')
 .forEach((element) => {
   element.addEventListener('click', () => {
   const {productId, deliveryOptionId} = element.dataset
-  let matchingItem
-  cart.forEach((cartItem) => {
-    if(productId === cartItem.productId){
-    matchingItem = cartItem
-    }
-  })
+  const matchingItem = findMatchingItem(productId)
   matchingItem.deliveryOptionId = deliveryOptionId
    saveToStorage()
    renderOrderSummary()
@@ -237,24 +216,13 @@ function calculateCartTotal(){
 
   cart.forEach((cartItem) => {
 
-
-    let matchingProduct
-    products.forEach((product) => {
-      const productId = cartItem.productId
-      if(productId === product.id){
-        matchingProduct = product
-      }
-    })
+  const productId = cartItem.productId
+  const matchingProduct = findMatchingProduct(productId)
 
   productPriceCents += matchingProduct.priceCents * cartItem.quantity
 
-    let deliveryOption
-    deliveryOptions.forEach((option) => {
-      const deliveryOptionId = cartItem.deliveryOptionId
-      if(option.id === deliveryOptionId){
-        deliveryOption = option
-      }
-    })
+  const deliveryOptionId = cartItem.deliveryOptionId
+  const deliveryOption = findDeliveryOption(deliveryOptionId)
 
     shippingPriceCents += deliveryOption.priceCents
 
@@ -282,10 +250,8 @@ function renderPaymentSummary() {
     totalCents
   } = calculateCartTotal()
 
-  let totalQuantity = 0
-  cart.forEach((cartItem) => {
-    totalQuantity += cartItem.quantity
-  })
+  const totalQuantity = cartTotalQuantity()
+  
 
   const cartDisabled = cart.length === 0
   ? 'disabled style="background-color:rgb(221, 194, 126); color: black; cursor: not-allowed"'

@@ -35,13 +35,7 @@ export function clearCart() {
 
 
   export function pushCart(productId){
-    let matchingItem;
-    cart.forEach((cartItem) => {
-      if(productId === cartItem.productId){
-        matchingItem = cartItem
-      }
-    })
-
+   const matchingItem = findMatchingItem(productId)
     if(matchingItem){
       matchingItem.quantity++
     }else{
@@ -52,4 +46,15 @@ export function clearCart() {
       })
     }
     saveToStorage()
+  }
+
+
+  export function findMatchingItem(productId){
+    let matchingItem;
+    cart.forEach((cartItem) => {
+      if(productId === cartItem.productId){
+        matchingItem = cartItem
+      }
+    })
+    return matchingItem
   }

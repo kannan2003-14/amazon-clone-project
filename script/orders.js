@@ -1,24 +1,18 @@
+import { cartTotalQuantity, updateCartQuantity } from "../data/add-to-cart.js";
 import { cart, pushCart } from "../data/cart.js";
-import { deliveryOptions } from "../data/deliveryOption.js";
-import { products } from "../data/products.js";
+import { deliveryOptions, findDeliveryOption } from "../data/deliveryOption.js";
+import { findMatchingProduct, products } from "../data/products.js";
 import formatCurrency from "./utils/money.js"; 
+import dayjs from "https://unpkg.com/supersimpledev@8.5.0/dayjs/esm/index.js"
 
 
 const orders = JSON.parse(localStorage.getItem('orders')) || []
 
-
-console.log(orders);
-
-
 let orderHTML = '';
 
 orders.slice().reverse().forEach((order) => {
-  const orderDate = new Date(order.date)
-  const formatDate = orderDate.toLocaleDateString('en-US',{
-    month: 'long',
-    day: 'numeric'
-  })
-
+  const orderDate = dayjs(order.date)
+  const formatDate = orderDate.format('MMMM D')
   const orderId = order.id
   const total = formatCurrency(order.cartTotalCents)
 
@@ -28,32 +22,18 @@ orders.slice().reverse().forEach((order) => {
 
     // getProductID
     const productId = cartItem.productId
-    let matchingProduct;
-    products.forEach((product) => {
-    if(productId === product.id){
-      matchingProduct = product
-    }
-    })
+    const matchingProduct = findMatchingProduct(productId)
 
   // getDeliveryOptionID
   const deliveryOptionId = cartItem.deliveryOptionId
-  let deliveryOption
-  deliveryOptions.forEach((option) => {
-    if(deliveryOptionId === option.id){
-     deliveryOption = option
-    }
-  })
+  const deliveryOption = findDeliveryOption(deliveryOptionId)
 
   // Estimated delivery date
-  const deliveryDate = new Date(order.date)
-  deliveryDate.setDate(deliveryDate.getDate() + deliveryOption.deliverydays)
+  const deliveryDate = orderDate.add(deliveryOption.deliverydays, 'day')
 
-  const formatDeliveryDate = deliveryDate.toLocaleDateString('en-US',{
-    month: 'long',
-    day: 'numeric'
-  })
+  const formatDeliveryDate = deliveryDate.format('MMMM D')
 
-  const isDelivered = new Date() >= deliveryDate
+  const isDelivered = dayjs() >= deliveryDate
   const deliveryLabel = isDelivered ? 'Delivered On:' : 'Arriving On'
 
     orderItemsHTML += `
@@ -84,7 +64,7 @@ orders.slice().reverse().forEach((order) => {
                 <button class="track-package-button button-secondary js-tracking-button"
                 data-product-name="${matchingProduct.name}"
                 data-product-image="${matchingProduct.image}"
-                data-product-date="${deliveryDate.toISOString()}"
+                data-product-delivery-date="${deliveryDate.toISOString()}"
                 data-quantity="${cartItem.quantity}">
                   Track package
                 </button>
@@ -141,7 +121,7 @@ document.querySelectorAll('.buy-again-button')
     const originalText = span.innerText
 
     pushCart(productId)
-    ordersQuantity()
+    updateCartQuantity()
 
     if(button.resetTimeout){
       clearTimeout(button.resetTimeout)
@@ -160,31 +140,23 @@ document.querySelectorAll('.buy-again-button')
   })
 })
 
-ordersQuantity()
-  
-function ordersQuantity(){
-  let cartQuantity = 0;
 
-  cart.forEach((cartItem) => {
-    cartQuantity += cartItem.quantity
-  })
-
-  document.querySelector('.js-cart-quantity')
-  .innerHTML = cartQuantity
-}
+ updateCartQuantity()
+ 
 
 
 document.querySelectorAll('.js-tracking-button')
 .forEach((button) => {
   button.addEventListener('click', () => {
-  const { productName, productImage, productDate, quantity} = button.dataset 
+  const { productName, productImage, productDeliveryDate, quantity} = button.dataset 
 
   const trackingData = {
     name: productName,
     image: productImage,
-    date: productDate,
+    deliveryDate: productDeliveryDate,
     quantity: quantity
   }
+
 
   localStorage.setItem('trackingItem', JSON.stringify(trackingData))
 
